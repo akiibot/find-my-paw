@@ -14,36 +14,41 @@ export default async function PublicPetPage({ params }: { params: Promise<{ publ
   // 404 if slug doesn't exist
   if (!pet) notFound()
 
-  // ── Fire-and-forget scan side effects ──
-  // Do NOT await — we never want this to block the page render.
+  // ── Scan side effects (awaited — Next.js kills void promises before they resolve) ──
   const reqHeaders = await headers()
   const userAgent = reqHeaders.get("user-agent")
   const ip = reqHeaders.get("x-forwarded-for") ?? reqHeaders.get("x-real-ip") ?? null
 
-  void Promise.all([
-    // 1. Log the scan event
-    prisma.scanEvent.create({
-      data: {
-        petId: pet.id,
-        userAgent: userAgent?.substring(0, 500) ?? null,
-        ipHash: ip ? Buffer.from(ip).toString("base64") : null,
-      }
-    }).catch(() => { /* silently ignore */ }),
+  try {
+    await Promise.all([
+      // 1. Log the scan event
+      prisma.scanEvent.create({
+        data: {
+          petId: pet.id,
+          userAgent: userAgent?.substring(0, 500) ?? null,
+          ipHash: ip ? Buffer.from(ip).toString("base64") : null,
+        }
+      }),
 
-    // 2. Send email alert — only if Lost Mode is active and owner email is set
-    ...(pet.lostMode && pet.ownerEmail
-      ? [sendScanAlert({
-          ownerEmail: pet.ownerEmail,
-          petName: pet.name,
-          publicId: pet.publicId,
-          lastSeenArea: pet.lastSeenArea,
-          rewardEnabled: pet.rewardEnabled,
-          rewardText: pet.rewardText,
-          userAgent,
-        }).catch(() => { /* silently ignore */ })]
-      : []
-    ),
-  ])
+      // 2. Send email alert — only if Lost Mode is active and owner email is set
+      ...(pet.lostMode && pet.ownerEmail
+        ? [sendScanAlert({
+            ownerEmail: pet.ownerEmail,
+            petName: pet.name,
+            publicId: pet.publicId,
+            lastSeenArea: pet.lastSeenArea,
+            rewardEnabled: pet.rewardEnabled,
+            rewardText: pet.rewardText,
+            userAgent,
+          })]
+        : []
+      ),
+    ])
+  } catch (err) {
+    // Non-fatal — log but don't crash the page
+    console.error("[scan-alert] Failed to log scan or send alert:", err)
+  }
+
 
   const { lostMode, rewardEnabled, rewardText, ownerPhone, ownerEmail, whatsapp } = pet
 
