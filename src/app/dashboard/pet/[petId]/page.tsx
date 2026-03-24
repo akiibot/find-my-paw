@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { ArrowLeft, ExternalLink, QrCode, AlertTriangle } from "lucide-react"
+import ImageUploader from "@/components/ImageUploader"
 
 export default async function EditPetPage({ params }: { params: Promise<{ petId: string }> | { petId: string } }) {
   // Deep unwrap params safely across Next.js versions
@@ -109,18 +110,8 @@ export default async function EditPetPage({ params }: { params: Promise<{ petId:
              <CardTitle>Basic Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2 pb-2">
-              <Label>Current Photo</Label>
-              {pet.photoUrl ? (
-                <div className="mt-2 mb-4">
-                  <img src={pet.photoUrl} alt="Pet photo" className="w-24 h-24 object-cover rounded-full shadow border-2" />
-                </div>
-              ) : (
-                <div className="text-sm text-muted-foreground italic mb-4 mt-2">No photo uploaded yet.</div>
-              )}
-              <Label htmlFor="photo">Upload New Photo (Optional)</Label>
-              <Input id="photo" name="photo" type="file" accept="image/*" className="cursor-pointer" />
-            </div>
+            
+            <ImageUploader userId={session.user.id} currentPhotoUrl={pet.photoUrl} />
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

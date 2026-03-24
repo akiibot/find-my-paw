@@ -30,27 +30,8 @@ export async function createPet(formData: FormData) {
   const ownerPhone = formData.get("ownerPhone") as string | null
   const ownerEmail = formData.get("ownerEmail") as string | null
 
-  // Handle optional photo upload
-  const photo = formData.get("photo") as File | null
-  let photoUrl: string | undefined = undefined
-
-  if (photo && photo.size > 0) {
-    const fileExt = photo.name.split('.').pop()
-    const fileName = `${session.user.id}/${Date.now()}.${fileExt}`
-    const arrayBuffer = await photo.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
-    
-    const { error } = await supabase.storage.from('pet-photos').upload(fileName, buffer, {
-      contentType: photo.type,
-      upsert: true
-    })
-
-    if (error) {
-      throw new Error(`Supabase Storage Error: ${error.message}. Make sure the 'pet-photos' bucket has an RLS policy allowing INSERTs!`)
-    }
-
-    photoUrl = supabase.storage.from('pet-photos').getPublicUrl(fileName).data.publicUrl
-  }
+  // Receive the direct-uploaded photo URL from the Client Component
+  const photoUrl = (formData.get("photoUrl") as string) || undefined
 
   const pet = await prisma.pet.create({
     data: {
@@ -93,27 +74,8 @@ export async function updatePet(petId: string, formData: FormData) {
   const rewardText = formData.get("rewardText") as string | null
   const lastSeenArea = formData.get("lastSeenArea") as string | null
 
-  // Handle optional photo upload
-  const photo = formData.get("photo") as File | null
-  let photoUrl: string | undefined = undefined
-
-  if (photo && photo.size > 0) {
-    const fileExt = photo.name.split('.').pop()
-    const fileName = `${session.user.id}/${Date.now()}.${fileExt}`
-    const arrayBuffer = await photo.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
-    
-    const { error } = await supabase.storage.from('pet-photos').upload(fileName, buffer, {
-      contentType: photo.type,
-      upsert: true
-    })
-
-    if (error) {
-      throw new Error(`Supabase Storage Error: ${error.message}. Make sure the 'pet-photos' bucket has an RLS policy allowing INSERTs!`)
-    }
-
-    photoUrl = supabase.storage.from('pet-photos').getPublicUrl(fileName).data.publicUrl
-  }
+  // Receive the direct-uploaded photo URL from the Client Component
+  const photoUrl = (formData.get("photoUrl") as string) || undefined
 
   const updateData: any = {
     name, breed, notes, medicalNotes, behaviorNotes,

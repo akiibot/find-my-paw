@@ -5,8 +5,14 @@ import { Label } from "@/components/ui/label"
 import { createPet } from "@/app/actions/pet"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
+import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
+import ImageUploader from "@/components/ImageUploader"
 
-export default function NewPetPage() {
+export default async function NewPetPage() {
+  const session = await auth()
+  if (!session?.user?.id) redirect("/login")
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
@@ -38,10 +44,8 @@ export default function NewPetPage() {
               <Label htmlFor="breed">Breed (Optional)</Label>
               <Input id="breed" name="breed" />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="photo">Pet Photo (Optional)</Label>
-              <Input id="photo" name="photo" type="file" accept="image/*" className="cursor-pointer" />
-            </div>
+            
+            <ImageUploader userId={session.user.id} />
             
             <div className="pt-4 border-t">
               <h3 className="text-lg font-medium mb-4">Emergency Contact Options</h3>
