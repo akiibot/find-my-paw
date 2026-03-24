@@ -1,7 +1,5 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 interface ScanAlertOptions {
   ownerEmail: string
   petName: string
@@ -13,6 +11,9 @@ interface ScanAlertOptions {
 }
 
 export async function sendScanAlert(opts: ScanAlertOptions) {
+  // Lazy init — avoids build-time crash when env var not present
+  const resend = new Resend(process.env.RESEND_API_KEY)
+
   const {
     ownerEmail,
     petName,
