@@ -1,9 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
-import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { AlertTriangle, Phone, Mail, MessageCircle, PawPrint } from "lucide-react"
-import Image from "next/image"
+import { Card, CardContent } from "@/components/ui/card"
+import { AlertTriangle, Phone, Mail, MessageCircle, PawPrint, ShieldCheck } from "lucide-react"
 
 export default async function PublicPetPage({ params }: { params: Promise<{ publicId: string }> }) {
   const { publicId } = await params
@@ -17,131 +15,167 @@ export default async function PublicPetPage({ params }: { params: Promise<{ publ
   const { lostMode, rewardEnabled, rewardText, ownerPhone, ownerEmail, whatsapp } = pet
 
   return (
-    <div className="min-h-screen bg-slate-50 relative pb-20">
-      
-      {/* Dynamic Header */}
-      <div className={`w-full py-4 text-center text-white px-4 font-bold tracking-widest uppercase ${lostMode ? 'bg-red-600 shadow-md block' : 'bg-emerald-600'}`}>
-        {lostMode ? (
-          <div className="flex items-center justify-center gap-2">
-            <AlertTriangle className="h-5 w-5" /> 
-            <span>Missing Pet Alert</span>
-          </div>
-        ) : (
-          <span>Safe & Registered</span>
-        )}
-      </div>
-
-      <main className="max-w-xl mx-auto p-4 space-y-6 mt-4">
+    <div className={`min-h-screen relative pb-20 selection:bg-primary/30
+      ${lostMode 
+        ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-destructive/30 via-background to-background' 
+        : 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-success/20 via-background to-background'
+      }`}
+    >
+      <main className="max-w-lg mx-auto p-4 sm:p-6 pt-8 sm:pt-12 space-y-6">
         
-        {/* Urgent Action Section (Lost Mode Only) */}
-        {lostMode && (
-          <Card className="border-2 border-red-500 shadow-xl overflow-hidden bg-white">
-            <div className="bg-red-50 p-6 text-center border-b border-red-100">
-               <h2 className="text-2xl font-black text-red-700 uppercase tracking-tight">I am Lost!</h2>
-               <p className="text-red-600 mt-1 font-medium text-lg">Please help me get back to my family.</p>
-               {pet.lastSeenArea && (
-                 <p className="text-sm text-red-800/80 mt-2 font-medium">Last seen near: {pet.lastSeenArea}</p>
-               )}
-            </div>
-            
-            {rewardEnabled && rewardText && (
-               <div className="bg-amber-100 text-amber-900 border-b border-amber-200 p-4 text-center font-bold text-lg">
-                 💰 {rewardText}
-               </div>
-            )}
-
-            <CardContent className="p-6 space-y-4">
-               {ownerPhone && (
-                 <a href={`tel:${ownerPhone}`} className="block w-full">
-                   <Button size="lg" className="w-full h-14 text-lg bg-red-600 hover:bg-red-700">
-                     <Phone className="mr-3 h-5 w-5" /> Call Owner
-                   </Button>
-                 </a>
-               )}
-               
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 {whatsapp && (
-                   <a target="_blank" href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}`} className="block w-full" rel="noreferrer">
-                     <Button size="lg" variant="outline" className="w-full h-14 border-emerald-500 text-emerald-700 hover:bg-emerald-50">
-                       <MessageCircle className="mr-2 h-5 w-5 text-emerald-500" /> WhatsApp
-                     </Button>
-                   </a>
-                 )}
-                 {ownerEmail && (
-                   <a href={`mailto:${ownerEmail}?subject=Found your pet: ${pet.name}`} className="block w-full">
-                     <Button size="lg" variant="outline" className="w-full h-14">
-                       <Mail className="mr-2 h-5 w-5" /> Email
-                     </Button>
-                   </a>
-                 )}
-               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Pet Information Profile */}
-        <Card className="overflow-hidden shadow-lg border-0">
-           <div className="w-full h-64 bg-slate-200 flex items-center justify-center relative">
+        {/* The Monolithic Digital ID Card */}
+        <Card className={`overflow-hidden shadow-2xl rounded-[2.5rem] bg-card/60 backdrop-blur-3xl border-2 sm:border-4 transition-all duration-700
+          ${lostMode ? 'shadow-[0_20px_60px_rgba(220,38,38,0.2)] border-destructive/50' : 'shadow-xl border-border'}`}
+        >
+           {/* Cinematic Photography Layer */}
+           <div className="w-full aspect-[4/5] sm:aspect-square bg-muted relative flex items-center justify-center overflow-hidden">
               {pet.photoUrl ? (
-                <Image 
+                <img 
                   src={pet.photoUrl} 
                   alt={pet.name} 
-                  fill 
-                  priority
-                  sizes="(max-width: 768px) 100vw, 600px"
-                  className="object-cover" 
+                  loading="lazy"
+                  className="w-full h-full object-cover" 
                 />
               ) : (
-                <PawPrint className="h-20 w-20 text-slate-300" />
+                <PawPrint className="h-32 w-32 text-muted-foreground/10" />
               )}
+
+              {/* Status Badge Tag Overlay (Top Left) */}
+              <div className="absolute top-6 left-6 z-20">
+                 {lostMode ? (
+                    <div className="flex items-center gap-2 bg-destructive text-white px-5 py-2 rounded-full font-black text-sm uppercase tracking-widest shadow-xl border border-white/20 animate-pulse">
+                      <AlertTriangle className="w-4 h-4" /> Missing
+                    </div>
+                 ) : (
+                    <div className="flex items-center gap-2 bg-success text-white px-5 py-2 rounded-full font-black text-sm uppercase tracking-widest shadow-xl border border-white/20">
+                      <ShieldCheck className="w-4 h-4" /> Secured
+                    </div>
+                 )}
+              </div>
+
+              {/* Bottom Gradient Fade & Title Overlay */}
+              <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-8 text-white z-10">
+                 <h1 className="text-6xl font-black tracking-tighter drop-shadow-2xl capitalize leading-none mb-2">
+                   {pet.name}
+                 </h1>
+                 <p className="text-2xl font-bold text-white/90 drop-shadow-md flex items-center gap-2">
+                   {pet.breed || "Mixed Breed"} 
+                   {pet.color && <span className="opacity-50">•</span>} 
+                   {pet.color && <span>{pet.color}</span>}
+                 </p>
+              </div>
            </div>
-           <CardHeader className="bg-white pb-4 border-b">
-             <div className="flex items-baseline justify-between">
-                <h1 className="text-4xl font-extrabold tracking-tight">{pet.name}</h1>
+
+           {/* Emergency Intervention Block (Interlocks with image natively) */}
+           {lostMode && (
+             <div className="bg-destructive text-white p-6 md:p-8 flex flex-col gap-4 border-y border-red-500/30">
+                <div>
+                   <h2 className="text-3xl font-black uppercase tracking-wider flex items-center gap-3">
+                     I am Lost!
+                   </h2>
+                   <p className="font-semibold text-white/90 text-lg mt-1">
+                     Please help me get back to my family.
+                   </p>
+                </div>
+                
+                {pet.lastSeenArea && (
+                  <div className="bg-black/20 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
+                    <p className="text-sm font-bold uppercase tracking-widest text-white/70 mb-1">Last Seen</p>
+                    <p className="text-xl font-bold">{pet.lastSeenArea}</p>
+                  </div>
+                )}
+
+                {rewardEnabled && rewardText && (
+                  <div className="bg-yellow-500 text-black p-4 rounded-2xl shadow-inner border border-yellow-300 font-black text-xl flex items-center gap-3">
+                    <span className="text-3xl font-serif">৳</span> {rewardText}
+                  </div>
+                )}
              </div>
-             <CardDescription className="text-lg font-medium text-slate-600">
-                {pet.breed || "Mixed Breed"} {pet.color ? `• ${pet.color}` : ''} {pet.age ? `• ${pet.age}` : ''}
-             </CardDescription>
-           </CardHeader>
+           )}
 
-           <CardContent className="p-6 space-y-6 bg-white">
-             {pet.notes && (
-               <div>
-                 <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">About Me</h3>
-                 <p className="text-slate-800 text-lg leading-relaxed whitespace-pre-wrap">{pet.notes}</p>
-               </div>
-             )}
+           <CardContent className="p-6 sm:p-8 space-y-8 bg-card/50">
              
-             {pet.behaviorNotes && (
-               <div className="p-4 bg-orange-50 rounded-xl border border-orange-100">
-                 <h3 className="text-sm font-bold text-orange-800 uppercase tracking-wider mb-2">Behavior Warning</h3>
-                 <p className="text-orange-900 font-medium leading-relaxed">{pet.behaviorNotes}</p>
+             {/* Data Grids */}
+             <div className="grid gap-6">
+                {pet.notes && (
+                  <div>
+                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <PawPrint className="w-4 h-4" /> About Me
+                    </h3>
+                    <p className="text-foreground text-xl font-medium leading-relaxed whitespace-pre-wrap">{pet.notes}</p>
+                  </div>
+                )}
+                
+                {pet.behaviorNotes && (
+                  <div className="p-6 bg-destructive/10 rounded-[2rem] border-2 border-destructive/20 shadow-sm relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-destructive/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                    <h3 className="text-sm font-black text-destructive uppercase tracking-widest mb-3 flex items-center gap-2 relative z-10">
+                      <AlertTriangle className="h-4 w-4" /> Behavior Warning
+                    </h3>
+                    <p className="text-foreground font-bold text-xl leading-relaxed relative z-10">{pet.behaviorNotes}</p>
+                  </div>
+                )}
+
+                {pet.medicalNotes && (
+                  <div className="p-6 bg-secondary/10 rounded-[2rem] border-2 border-secondary/20 shadow-sm relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-secondary/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                    <h3 className="text-sm font-black text-secondary uppercase tracking-widest mb-3 relative z-10">Medical Needs</h3>
+                    <p className="text-foreground font-bold text-xl leading-relaxed relative z-10">{pet.medicalNotes}</p>
+                  </div>
+                )}
+             </div>
+
+             {/* Safe Mode Assurance */}
+             {!lostMode && (
+               <div className="text-center p-6 bg-success/10 rounded-[2rem] border-2 border-success/20 shadow-sm">
+                  <p className="text-success font-bold text-lg leading-relaxed">
+                    I am not currently marked as lost. My humans have registered this secure tag just in case. Have a great day!
+                  </p>
                </div>
              )}
 
-             {pet.medicalNotes && (
-               <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-                 <h3 className="text-sm font-bold text-blue-800 uppercase tracking-wider mb-2">Medical Needs</h3>
-                 <p className="text-blue-900 font-medium leading-relaxed">{pet.medicalNotes}</p>
-               </div>
-             )}
            </CardContent>
         </Card>
 
-        {/* Safe Mode Assurance (When NO Lost Mode) */}
-        {!lostMode && (
-          <div className="text-center p-6 bg-emerald-50 rounded-xl border border-emerald-100 mt-8 shadow-sm">
-             <h3 className="text-emerald-800 font-bold mb-2 text-lg">Hi there!</h3>
-             <p className="text-emerald-700/90 font-medium">
-               I am not currently marked as lost. My humans have registered this secure tag just in case. Have a great day!
-             </p>
+        {/* Floating Action Bar (Sticky on Mobile) */}
+        {lostMode && (
+          <div className="sticky bottom-6 z-50 w-full animate-in slide-in-from-bottom-10 fade-in duration-700">
+            <div className="flex flex-col gap-3 p-4 bg-background/80 backdrop-blur-2xl rounded-[2.5rem] border border-border shadow-[0_0_40px_rgba(0,0,0,0.1)] dark:shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+               
+               {ownerPhone && (
+                 <a href={`tel:${ownerPhone}`} className="block w-full outline-none">
+                   <button className="w-full flex items-center justify-center gap-4 h-20 bg-destructive hover:bg-destructive/90 text-white font-black text-2xl uppercase tracking-widest rounded-[2rem] shadow-[0_10px_30px_rgba(220,38,38,0.4)] transition-all hover:scale-[1.02] border border-red-400/50 active:scale-95 focus:ring-4 focus:ring-destructive/30">
+                     <Phone className="w-8 h-8 animate-pulse" /> Call Owner
+                   </button>
+                 </a>
+               )}
+               
+               <div className="grid grid-cols-2 gap-3">
+                 {whatsapp && (
+                   <a target="_blank" href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}`} className="block w-full outline-none" rel="noreferrer">
+                     <button className="w-full flex items-center justify-center gap-2 h-16 bg-success/10 hover:bg-success/20 border-2 border-success/30 text-success font-extrabold text-sm sm:text-lg uppercase tracking-wider rounded-2xl transition-all hover:scale-[1.02] active:scale-95 focus:ring-4 focus:ring-success/20">
+                       <MessageCircle className="w-5 h-5" /> WhatsApp
+                     </button>
+                   </a>
+                 )}
+                 {ownerEmail && (
+                   <a href={`mailto:${ownerEmail}?subject=Found your pet: ${pet.name}`} className="block w-full outline-none">
+                     <button className="w-full flex items-center justify-center gap-2 h-16 bg-muted/50 hover:bg-muted border-2 border-transparent text-foreground font-extrabold text-sm sm:text-lg uppercase tracking-wider rounded-2xl transition-all hover:scale-[1.02] active:scale-95 focus:ring-4 focus:ring-muted">
+                       <Mail className="w-5 h-5" /> Email
+                     </button>
+                   </a>
+                 )}
+               </div>
+            </div>
           </div>
         )}
-
       </main>
       
-      <footer className="text-center py-8 text-slate-400 text-sm font-medium">
-        Powered by <span className="font-bold text-slate-500">Find My Paw</span>
+      {/* Premium Footer */}
+      <footer className="text-center py-10 opacity-60 hover:opacity-100 transition-opacity">
+        <p className="text-muted-foreground text-sm font-bold tracking-widest uppercase">
+          Technology by <span className="text-foreground">Find My Paw</span>
+        </p>
       </footer>
     </div>
   )

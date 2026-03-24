@@ -16,7 +16,7 @@ export default async function DashboardPage() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-5xl mx-auto w-full space-y-8 pb-20">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Your Pets</h1>
@@ -31,47 +31,55 @@ export default async function DashboardPage() {
       </div>
 
       {pets.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed border-2 bg-white">
-          <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-            <PawPrint className="h-6 w-6 text-slate-400" />
+        <Card className="flex flex-col items-center justify-center p-16 text-center border border-border bg-card shadow-sm rounded-3xl">
+          <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center mb-6 shadow-inner border border-primary/20">
+            <PawPrint className="h-10 w-10 text-primary" />
           </div>
-          <h3 className="text-lg font-semibold">No pets found</h3>
-          <p className="text-muted-foreground mt-2 max-w-sm">
-            You haven't added any pets yet. Create a profile to generate their first QR tag.
+          <h3 className="text-2xl font-black text-foreground tracking-tight">Your pack is empty!</h3>
+          <p className="text-muted-foreground mt-2 max-w-md text-lg leading-relaxed">
+            Create a profile for your best friend to generate their first indestructible QR tag.
           </p>
-          <Link href="/dashboard/new" className="mt-6">
-            <Button>Add your first pet</Button>
+          <Link href="/dashboard/new" className="mt-8">
+            <Button size="lg" className="rounded-full shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground h-14 px-8 text-lg font-bold">
+              Add Your First Pet
+            </Button>
           </Link>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {pets.map((pet) => (
-            <Card key={pet.id} className="overflow-hidden flex flex-col items-start transition-all hover:shadow-md bg-white">
-              <div className="w-full h-32 bg-slate-100 flex items-center justify-center border-b object-cover">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {pets.map((pet: any) => (
+            <Card key={pet.id} className="overflow-hidden flex flex-col items-start transition-all hover:shadow-xl hover:-translate-y-1 duration-300 bg-card border-border rounded-3xl shadow-sm">
+              <div className="w-full aspect-square md:aspect-[4/3] bg-muted relative overflow-hidden group border-b border-border">
                 {pet.photoUrl ? (
-                  <img src={pet.photoUrl} alt={pet.name} className="w-full h-full object-cover" />
+                  <img src={pet.photoUrl} alt={pet.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                 ) : (
-                  <span className="text-slate-400 text-sm">No photo</span>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-50">
+                    <PawPrint className="h-8 w-8 text-muted-foreground" />
+                    <span className="text-muted-foreground font-semibold tracking-widest uppercase text-[10px]">No Photo</span>
+                  </div>
+                )}
+                {/* Embedded Status Badge */}
+                {pet.lostMode && (
+                  <div className="absolute top-4 right-4 bg-destructive text-white animate-pulse px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase shadow-lg border-2 border-white/50 z-20">
+                    LOST
+                  </div>
                 )}
               </div>
-              <CardHeader className="pb-2 w-full">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-xl">{pet.name}</CardTitle>
-                  {pet.lostMode && (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                      Lost
-                    </span>
-                  )}
+              <CardHeader className="pb-4 w-full pt-6">
+                <div className="flex flex-col items-start">
+                  <CardTitle className="text-2xl font-black text-foreground tracking-tight">{pet.name}</CardTitle>
+                  <CardDescription className="text-base font-medium mt-1 text-muted-foreground">
+                    {pet.breed || "Mixed Breed"}
+                  </CardDescription>
                 </div>
-                <CardDescription>{pet.breed || "Mixed Breed"}</CardDescription>
               </CardHeader>
-              <CardContent className="w-full mt-auto pt-4 flex gap-2">
+              <CardContent className="w-full mt-auto pt-2 pb-6 flex gap-3">
                  <Link href={`/dashboard/pet/${pet.id}`} className="flex-1">
-                   <Button variant="outline" className="w-full">Edit Profile</Button>
+                   <Button variant="secondary" className="w-full rounded-2xl h-12 font-bold text-secondary-foreground hover:bg-secondary/80">Edit Profile</Button>
                  </Link>
                  <Link href={`/dashboard/pet/${pet.id}/qr`}>
-                   <Button variant="secondary" size="icon" title="View QR">
-                     <QrCode className="h-4 w-4" />
+                   <Button variant="outline" size="icon" title="View QR" className="h-12 w-12 rounded-2xl border-2 hover:border-primary hover:text-primary">
+                     <QrCode className="h-5 w-5" />
                    </Button>
                  </Link>
               </CardContent>
