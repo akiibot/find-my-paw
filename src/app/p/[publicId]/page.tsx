@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AlertTriangle, Phone, Mail, MessageCircle, PawPrint } from "lucide-react"
+import Image from "next/image"
 
 export default async function PublicPetPage({ params }: { params: Promise<{ publicId: string }> }) {
   const { publicId } = await params
@@ -82,14 +83,21 @@ export default async function PublicPetPage({ params }: { params: Promise<{ publ
         <Card className="overflow-hidden shadow-lg border-0">
            <div className="w-full h-64 bg-slate-200 flex items-center justify-center relative">
               {pet.photoUrl ? (
-                <img src={pet.photoUrl} alt={pet.name} className="w-full h-full object-cover" />
+                <Image 
+                  src={pet.photoUrl} 
+                  alt={pet.name} 
+                  fill 
+                  priority
+                  sizes="(max-width: 768px) 100vw, 600px"
+                  className="object-cover" 
+                />
               ) : (
                 <PawPrint className="h-20 w-20 text-slate-300" />
               )}
            </div>
            <CardHeader className="bg-white pb-4 border-b">
              <div className="flex items-baseline justify-between">
-                <CardTitle className="text-4xl font-extrabold tracking-tight">{pet.name}</CardTitle>
+                <h1 className="text-4xl font-extrabold tracking-tight">{pet.name}</h1>
              </div>
              <CardDescription className="text-lg font-medium text-slate-600">
                 {pet.breed || "Mixed Breed"} {pet.color ? `• ${pet.color}` : ''} {pet.age ? `• ${pet.age}` : ''}
