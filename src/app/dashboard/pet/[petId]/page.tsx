@@ -2,13 +2,14 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { updatePet, deletePet } from "@/app/actions/pet"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { ArrowLeft, ExternalLink, QrCode, AlertTriangle } from "lucide-react"
 import ImageUploader from "@/components/ImageUploader"
+import SavePetForm from "@/components/SavePetForm"
 
 export default async function EditPetPage({ params }: { params: Promise<{ petId: string }> | { petId: string } }) {
   // Deep unwrap params safely across Next.js versions
@@ -65,7 +66,7 @@ export default async function EditPetPage({ params }: { params: Promise<{ petId:
         </div>
       </div>
 
-      <form key={pet.updatedAt?.toString()} action={updatePetAction} className="space-y-8">
+      <SavePetForm action={updatePetAction}>
         
         {/* LOST MODE STATUS - CRITICAL COMMAND CENTER */}
         <Card className={`border-2 overflow-hidden shadow-lg transition-colors duration-500 rounded-3xl ${pet.lostMode ? 'border-destructive bg-destructive/5 shadow-destructive/20' : 'border-border bg-card'}`}>
@@ -108,6 +109,25 @@ export default async function EditPetPage({ params }: { params: Promise<{ petId:
                   </label>
              </div>
           </CardHeader>
+
+           {/* Notification Alert Status */}
+           <div className="px-8 pb-6 flex flex-wrap gap-3 items-center">
+             <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest mr-1">Scan Alerts:</span>
+             {pet.ownerEmail ? (
+               <span className="inline-flex items-center gap-1.5 bg-success/10 border border-success/30 text-success text-xs font-bold px-3 py-1.5 rounded-full">
+                 <span className="w-1.5 h-1.5 rounded-full bg-success inline-block animate-pulse" />
+                 Email Active — {pet.ownerEmail}
+               </span>
+             ) : (
+               <span className="inline-flex items-center gap-1.5 bg-yellow-500/10 border border-yellow-500/30 text-yellow-600 dark:text-yellow-400 text-xs font-bold px-3 py-1.5 rounded-full">
+                 ⚠ Add a contact email below to enable alerts
+               </span>
+             )}
+             <span className="inline-flex items-center gap-1.5 bg-muted/50 border border-border text-muted-foreground text-xs font-bold px-3 py-1.5 rounded-full opacity-60 cursor-not-allowed select-none">
+               📱 SMS — Coming Soon
+             </span>
+           </div>
+
           <CardContent className="space-y-6 pt-6 border-t border-border/50 px-8 pb-8 bg-black/5 dark:bg-black/20">
             <div className="space-y-3">
               <Label htmlFor="lastSeenArea" className="text-base font-bold">Last Known Location</Label>
@@ -185,13 +205,8 @@ export default async function EditPetPage({ params }: { params: Promise<{ petId:
               </div>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-end pt-6 bg-muted/20 border-t border-border px-8 pb-8">
-             <Button type="submit" size="lg" className="h-14 px-10 text-lg rounded-full font-black tracking-wide shadow-lg hover:scale-105 transition-transform">
-               Save All Changes
-             </Button>
-          </CardFooter>
         </Card>
-      </form>
+      </SavePetForm>
       
       {/* DANGER ZONE */}
       <div className="border border-destructive/30 bg-destructive/10 p-8 rounded-3xl mt-16 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { PawPrint, LogOut, CircleUser } from "lucide-react"
+import { Toaster } from "@/components/ui/sonner"
 
 export default async function DashboardLayout({
   children,
@@ -52,6 +53,7 @@ export default async function DashboardLayout({
       <main className="flex-1 w-full mx-auto px-4 md:px-8 py-8 items-start">
         {children}
       </main>
+      <Toaster richColors position="bottom-center" />
     </div>
   )
 }

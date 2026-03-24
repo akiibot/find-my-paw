@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
+import { headers } from "next/headers"
 import { Card, CardContent } from "@/components/ui/card"
 import { AlertTriangle, Phone, Mail, MessageCircle, PawPrint, ShieldCheck } from "lucide-react"
+import { sendScanAlert } from "@/lib/email"
 
 export default async function PublicPetPage({ params }: { params: Promise<{ publicId: string }> }) {
   const { publicId } = await params
@@ -12,7 +14,39 @@ export default async function PublicPetPage({ params }: { params: Promise<{ publ
   // 404 if slug doesn't exist
   if (!pet) notFound()
 
+  // ── Fire-and-forget scan side effects ──
+  // Do NOT await — we never want this to block the page render.
+  const reqHeaders = await headers()
+  const userAgent = reqHeaders.get("user-agent")
+  const ip = reqHeaders.get("x-forwarded-for") ?? reqHeaders.get("x-real-ip") ?? null
+
+  void Promise.all([
+    // 1. Log the scan event
+    prisma.scanEvent.create({
+      data: {
+        petId: pet.id,
+        userAgent: userAgent?.substring(0, 500) ?? null,
+        ipHash: ip ? Buffer.from(ip).toString("base64") : null,
+      }
+    }).catch(() => { /* silently ignore */ }),
+
+    // 2. Send email alert — only if Lost Mode is active and owner email is set
+    ...(pet.lostMode && pet.ownerEmail
+      ? [sendScanAlert({
+          ownerEmail: pet.ownerEmail,
+          petName: pet.name,
+          publicId: pet.publicId,
+          lastSeenArea: pet.lastSeenArea,
+          rewardEnabled: pet.rewardEnabled,
+          rewardText: pet.rewardText,
+          userAgent,
+        }).catch(() => { /* silently ignore */ })]
+      : []
+    ),
+  ])
+
   const { lostMode, rewardEnabled, rewardText, ownerPhone, ownerEmail, whatsapp } = pet
+
 
   return (
     <div className={`min-h-screen relative pb-20 selection:bg-primary/30
