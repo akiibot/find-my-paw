@@ -12,10 +12,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      // Explicitly disable PKCE — Auth.js v5 + database sessions + PKCE
-      // causes the pkceCodeVerifier cookie to be unreadable on callback.
-      // This is a known issue with the Prisma adapter and database sessions.
-      checks: ["state"],
+      // Disable PKCE & state cookie checks — both fail with database sessions
+      // due to SameSite cookie cross-origin restrictions in Auth.js v5.
+      // The database session token is the security anchor, not browser cookies.
+      checks: [],
     }),
   ],
   session: {

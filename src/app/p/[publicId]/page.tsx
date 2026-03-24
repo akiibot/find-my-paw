@@ -20,6 +20,7 @@ export default async function PublicPetPage({ params }: { params: Promise<{ publ
   const ip = reqHeaders.get("x-forwarded-for") ?? reqHeaders.get("x-real-ip") ?? null
 
   try {
+    console.log(`[scan] pet=${pet.name} lostMode=${pet.lostMode} ownerEmail=${pet.ownerEmail ?? 'NOT SET'}`)
     await Promise.all([
       // 1. Log the scan event
       prisma.scanEvent.create({

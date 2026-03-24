@@ -121,10 +121,18 @@ export async function sendScanAlert(opts: ScanAlertOptions) {
 </html>
 `
 
-  return resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: 'Find My Paw <onboarding@resend.dev>',
     to: ownerEmail,
     subject: `🚨 ${petName}'s QR tag was just scanned!`,
     html,
   })
+
+  if (error) {
+    console.error('[resend] API error:', JSON.stringify(error))
+  } else {
+    console.log('[resend] Email sent successfully. ID:', data?.id, '→ to:', ownerEmail)
+  }
+
+  return { data, error }
 }
