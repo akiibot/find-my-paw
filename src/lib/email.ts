@@ -1,4 +1,4 @@
-import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 
 interface ScanAlertOptions {
   ownerEmail: string
@@ -11,9 +11,6 @@ interface ScanAlertOptions {
 }
 
 export async function sendScanAlert(opts: ScanAlertOptions) {
-  // Lazy init — avoids build-time crash when env var not present
-  const resend = new Resend(process.env.RESEND_API_KEY)
-
   const {
     ownerEmail,
     petName,
@@ -25,6 +22,17 @@ export async function sendScanAlert(opts: ScanAlertOptions) {
   } = opts
 
   const profileUrl = `${process.env.AUTH_URL || 'http://localhost:3000'}/p/${publicId}`
+
+  // Brevo (formerly Sendinblue) SMTP — 300 free emails/day, no domain needed
+  const transporter = nodemailer.createTransport({
+    host: 'smtp-relay.brevo.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.BREVO_SMTP_USER,   // your Brevo account email
+      pass: process.env.BREVO_SMTP_KEY,    // Brevo SMTP API key (not your password)
+    },
+  })
 
   const html = `
 <!DOCTYPE html>
@@ -56,8 +64,6 @@ export async function sendScanAlert(opts: ScanAlertOptions) {
           <!-- Body -->
           <tr>
             <td style="padding:40px;">
-
-              <!-- Alert info box -->
               <table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff08;border:1px solid #333;border-radius:16px;margin-bottom:32px;">
                 <tr>
                   <td style="padding:24px;">
@@ -87,19 +93,16 @@ export async function sendScanAlert(opts: ScanAlertOptions) {
                 </tr>
               </table>
 
-              <!-- CTA -->
               <div style="text-align:center;margin-bottom:32px;">
                 <a href="${profileUrl}" style="display:inline-block;background:#dc2626;color:#ffffff;font-size:18px;font-weight:900;padding:18px 40px;border-radius:50px;text-decoration:none;letter-spacing:0.5px;box-shadow:0 8px 24px rgba(220,38,38,0.4);">
                   View ${petName}'s Live Profile →
                 </a>
               </div>
 
-              <!-- Tip -->
               <p style="margin:0;color:#6b7280;font-size:14px;line-height:1.7;text-align:center;">
                 The finder can see your contact details on the profile page right now.<br/>
                 Open the profile, or contact them directly using the numbers you've registered.
               </p>
-
             </td>
           </tr>
 
@@ -121,18 +124,12 @@ export async function sendScanAlert(opts: ScanAlertOptions) {
 </html>
 `
 
-  const { data, error } = await resend.emails.send({
-    from: 'Find My Paw <onboarding@resend.dev>',
+  const info = await transporter.sendMail({
+    from: `"Find My Paw 🐾" <${process.env.BREVO_SMTP_USER}>`,
     to: ownerEmail,
     subject: `🚨 ${petName}'s QR tag was just scanned!`,
     html,
   })
 
-  if (error) {
-    console.error('[resend] API error:', JSON.stringify(error))
-  } else {
-    console.log('[resend] Email sent successfully. ID:', data?.id, '→ to:', ownerEmail)
-  }
-
-  return { data, error }
+  console.log('[brevo] Email sent. MessageId:', info.messageId, '→ to:', ownerEmail)
 }
