@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, useEffect } from "react"
+import { useActionState, useEffect, useRef } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 
@@ -12,10 +12,16 @@ interface SavePetFormProps {
 }
 
 export default function SavePetForm({ action, children }: SavePetFormProps) {
+  // submitCount is used as a `key` on the form so uncontrolled inputs
+  // (defaultValue) are fully remounted after each successful save,
+  // preventing the Base UI "uncontrolled FieldControl" warning.
+  const submitCount = useRef(0)
+
   const [state, formAction, isPending] = useActionState(async (_prev: unknown, formData: FormData) => {
     try {
       await action(formData)
-      return { success: true as const }
+      submitCount.current += 1
+      return { success: true as const, count: submitCount.current }
     } catch (err) {
       return { success: false as const, error: err instanceof Error ? err.message : "Something went wrong." }
     }
@@ -36,7 +42,8 @@ export default function SavePetForm({ action, children }: SavePetFormProps) {
   }, [state])
 
   return (
-    <form action={formAction} className="space-y-8">
+    // key changes on each successful save, remounting all uncontrolled children
+    <form key={state?.success ? state.count : 0} action={formAction} className="space-y-8">
       {children}
       <div className="flex justify-end">
         <Button
